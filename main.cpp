@@ -22,9 +22,11 @@ int main() {
                      "emission": false
                   }
                 })"_json;
-    //o.getByNamePath<int>("jjj");
-    auto organization1 = j.get<Organization>();
-    std::cout << organization1 << std::endl;
+    Organization o;
+    std::cout << o << std::endl;
+    //std::cout << o.getByNamePath<long long>("egrul.uk");
+    o = j.get<Organization>();
+    std::cout << o << std::endl;
     std::cout << j << std::endl;
     return 0;
 }

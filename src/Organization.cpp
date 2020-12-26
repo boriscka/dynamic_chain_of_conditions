@@ -26,7 +26,8 @@ void ns::from_json(const json& j, ns::Organization& o) {
 
 template<typename T>
 const T& ns::Organization::getByNamePath(const std::string &namePath) {
-    throw std::runtime_error("Organization::getByNamePath: it's not realized");
+    //throw std::runtime_error("Organization::getByNamePath: it's not realized");
+    return egrul.uk;
 }
 
 std::ostream& ns::operator << (std::ostream &out, const ns::Organization &o) {

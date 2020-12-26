@@ -12,9 +12,9 @@ set(JSON_Install OFF CACHE INTERNAL "")
 add_subdirectory(3dparty/json/nlohmann_json)
 
 
-add_executable(conditions main.cpp)
+add_executable(conditions)
 
 target_include_directories(conditions PUBLIC src)
-target_sources(conditions PUBLIC src/organization.cpp)
+target_sources(conditions PUBLIC main.cpp src/organization.cpp src/condition.cpp)
 target_compile_features(conditions PUBLIC cxx_std_17)
 target_link_libraries(conditions PRIVATE nlohmann_json::nlohmann_json)
