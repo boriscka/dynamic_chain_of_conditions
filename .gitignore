@@ -33,6 +33,7 @@
 
 build
 build/**
+3dparty/json/**
 .idea/**
 
 **/.DS_Store
