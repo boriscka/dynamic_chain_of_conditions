@@ -12,9 +12,15 @@
 #include <optional>
 #include <map>
 #include <stdexcept>
+#include <memory>
 
 namespace ns {
 
+    class Rule;
+    using RuleMap = std::map<std::string, std::shared_ptr<Rule>>;
+
+    const static std::string SCOPE_THEN_NAME("then");
+    const static std::string SCOPE_ELSE_NAME("else");
 
     class Action {
 
@@ -22,6 +28,8 @@ namespace ns {
         friend void from_json(const json& j, Action&);
 
     public:
+        using Ptr = std::shared_ptr<Action>;
+
         enum ResultType {
             RESULT_ACTION,
             RESULT_RULE,
@@ -41,18 +49,22 @@ namespace ns {
         /**
          * It applies a rule to an organization
          * @param org
-         * @return next Rule name
+         * @return next Action (to avoiding a recursion)
          */
-        virtual std::optional<std::string> applyTo(Organization &org);
+        virtual std::optional<ns::Action> applyTo(Organization &org);
     };
 
 
     class Rule: public Action {
 
+        using ConditionExecutor = std::function<bool(const Organization &)>;
+
         std::string name;
-        std::function<bool(const Organization &)> ifExecutor;
-        std::function<void(Organization &)> thenExecutor;
-        std::function<void(Organization &)> elseExecutor;
+        std::map<std::string, std::string> relativeRules;
+
+        ConditionExecutor ifExecutor;
+        Action::Ptr thenAction;
+        Action::Ptr elseAction;
 
         friend void to_json(json& j, const Rule&);
         friend void from_json(const json& j, Rule&);
@@ -62,12 +74,14 @@ namespace ns {
         Rule() = default;
         explicit Rule(std::string name) : name(std::move(name)) {}
 
-        std::optional<std::string> applyTo(Organization &org) override;
+        std::optional<ns::Action> applyTo(Organization &org) override;
+
+        void linkToRules(const RuleMap & rules);
     };
 
     class Condition {
 
-        std::map<std::string, Rule> rules;
+        std::shared_ptr<Rule> rootRule;
         bool isInitialized;
 
         friend void to_json(json& j, const Condition&);
