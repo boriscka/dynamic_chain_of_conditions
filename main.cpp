@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include <nlohmann/json.hpp>
 
@@ -8,41 +9,50 @@
 using namespace  ns;
 
 int main() {
-    auto j = R"({
-                  "egrul":
-                  {
-                     "inn": 123456789,
-                     "uk": 10000000,
-                     "ogrn": 1117847400120,
-                     "opf": 12211,
-                     "nalog": "ОСНО"
-                  },
-                  "cbr":
-                  {
-                     "some_value": -1,
-                     "emission": false
-                  }
-                })"_json;
-    std::cout << j << std::endl;
-
-    Organization o;
-    std::cout << o << std::endl;
-    try {
-        o = j.get<Organization>();
-    } catch(std::exception &e) {
-        std::cout << "Organization error: " << e.what() << std::endl;
-        return 1;
+    std::ifstream fileCondition1("condition1.json");
+    std::ifstream fileCondition2("condition2.json");
+    std::ifstream fileOrganization1("organization.json");
+    if (!fileCondition1.is_open() || !fileCondition2.is_open() || !fileOrganization1.is_open()) {
+        std::cout << "Error: Problem during an opening files: condition1.json, condition2.json, organization.json"
+                  << std::endl;
+        return -1;
     }
-    std::cout << o << std::endl;
 
-    Condition cond;
+    json jsonCondition1, jsonCondition2, jsonOrganization1;
+    fileCondition1 >> jsonCondition1;
+    fileCondition2 >> jsonCondition2;
+    fileOrganization1 >> jsonOrganization1;
+
+    std::cout << jsonCondition1 << std::endl;
+    std::cout << jsonCondition2 << std::endl;
+    std::cout << jsonOrganization1 << std::endl;
+
+    Organization organization;
+    Condition condition_1;
+    Condition condition_2;
+
     try {
-        cond = j.get<Condition>();
-        cond.applyTo(o);
+        organization = jsonOrganization1.get<Organization>();
+        condition_1 = jsonCondition1.get<Condition>();
+        condition_2 = jsonCondition2.get<Condition>();
     } catch(std::exception &e) {
-        std::cout << "Condition error: " << e.what() << std::endl;
-        return 2;
+        std::cout << "Error during a deserialization from json objects: " << e.what() << std::endl;
+        return -2;
     }
-    std::cout << o << std::endl;
+
+    try {
+        std::cout << std::endl << "Organization before an execution of conditions: \n" << organization << std::endl;
+
+        condition_1.applyTo(organization);
+        std::cout << std::endl << "Organization after first conditions: \n" << organization << std::endl;
+
+        condition_2.applyTo(organization);
+        std::cout << std::endl << "Organization after second conditions: \n" << organization << std::endl;
+
+    } catch(std::exception &e) {
+        std::cout << "Error during an execution of conditions: " << e.what() << std::endl;
+        return -3;
+    }
+
     return 0;
 }

@@ -9,15 +9,17 @@
 #include <string>
 #include <utility>
 #include <functional>
+#include <optional>
 #include <map>
 #include <stdexcept>
 
 namespace ns {
 
-    class Result {
 
-        friend void to_json(json& j, const Result&);
-        friend void from_json(const json& j, Result&);
+    class Action {
+
+        friend void to_json(json& j, const Action&);
+        friend void from_json(const json& j, Action&);
 
     public:
         enum ResultType {
@@ -34,12 +36,18 @@ namespace ns {
         };
 
     public:
-        virtual ~Result() = default;
-        virtual void applyTo(Organization &org);
+        virtual ~Action() = default;
+
+        /**
+         * It applies a rule to an organization
+         * @param org
+         * @return next Rule name
+         */
+        virtual std::optional<std::string> applyTo(Organization &org);
     };
 
 
-    class Rule: public Result {
+    class Rule: public Action {
 
         std::string name;
         std::function<bool(const Organization &)> ifExecutor;
@@ -54,12 +62,11 @@ namespace ns {
         Rule() = default;
         explicit Rule(std::string name) : name(std::move(name)) {}
 
-        void applyTo(Organization &org) override;
+        std::optional<std::string> applyTo(Organization &org) override;
     };
 
     class Condition {
 
-        Rule * rootRule;
         std::map<std::string, Rule> rules;
         bool isInitialized;
 
@@ -68,7 +75,7 @@ namespace ns {
 
     public:
 
-        Condition() : isInitialized(false), rootRule(nullptr) {}
+        Condition() : isInitialized(false) {}
 
         void applyTo(Organization &org);
     };
@@ -78,8 +85,8 @@ namespace ns {
     void from_json(const json& j, Condition& cond);
     void to_json(json& j, const Rule& rule);
     void from_json(const json& j, Rule& rule);
-    void to_json(json& j, const Result& result);
-    void from_json(const json& j, Result& result);
+    void to_json(json& j, const Action& result);
+    void from_json(const json& j, Action& result);
 }
 
 #endif //CONDITIONS_CONDITION_H
