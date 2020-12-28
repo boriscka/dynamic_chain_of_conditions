@@ -33,21 +33,22 @@ namespace ns {
             throw std::runtime_error("Error in isInRange(): bottom border (" + std::to_string(minVal)
                                      + ") is greater than top border (" + std::to_string(maxVal) + ").");
         }
-        return var == minVal || var > minVal || var < maxVal || var == maxVal;
+        return (var == minVal || var > minVal) && (var < maxVal || var == maxVal);
     }
 
 
     template <class T>
     inline void defineEqualFunction(const std::string &field, const T &value, ConditionExecutor &function) {
         function = ConditionExecutor([field, value] (const ns::Organization &org) {
-            return isEqual(org.getByNamePath<T>(field), value);
+            const auto orgValue = org.getByNamePath<T>(field);
+            return isEqual(orgValue, value);
         });
     }
 
     template <class T>
     inline void defineGreaterThanOrEqualFunction(const std::string &field, const T &value, ConditionExecutor &function) {
         function = ConditionExecutor([field, value] (const ns::Organization &org) {
-            const auto &orgValue = org.getByNamePath<T>(field);
+            const auto orgValue = org.getByNamePath<T>(field);
             return isEqual(orgValue, value) || isGreater(orgValue, value);
         });
     }
@@ -55,7 +56,7 @@ namespace ns {
     template <typename T>
     inline void defineRangeFunction(const std::string &field, const T &minValue, const T &maxValue, ConditionExecutor &function) {
         function = ConditionExecutor([field, minValue, maxValue] (const ns::Organization &org) {
-            auto orgValue = org.getByNamePath<T>(field);
+            const auto orgValue = org.getByNamePath<T>(field);
             return isInRange(orgValue, minValue, maxValue);
         });
     }

@@ -46,7 +46,7 @@ namespace ns {
         void changeTax(const std::string &newTaxSystem);
 
         template<class T>
-        const T& getByNamePath(const std::string &namePath) const {
+        T getByNamePath(const std::string &namePath) const {
             std::vector<std::string> names;
             size_t lastIndex = 0;
 
