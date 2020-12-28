@@ -26,7 +26,15 @@ void ns::from_json(const json& j, ns::Organization& o) {
 std::ostream& ns::operator << (std::ostream &out, const ns::Organization &o) {
     out << "{\n\tegrul: {\n\t\tinn " << o.egrul.inn << ", uk " << o.egrul.uk << ", ogrn " << o.egrul.ogrn
         << ", opf " << o.egrul.opf << ", nalog \"" << o.egrul.nalog << "\"\n\t},\n\tcbr: {\n\t\temission "
-        << (o.cbr.emission.has_value() ? (o.cbr.emission ? "true": "false") : "not initialized")
+        << (o.cbr.emission.has_value() ? (o.cbr.emission.value() ? "true": "false") : "not initialized")
         << "\n\t}\n}" << std::endl;
     return out;
+}
+
+void ns::Organization::addToUK(long long amount) {
+    egrul.uk += amount;
+}
+
+void ns::Organization::changeTax(const std::string &newTaxSystem) {
+    egrul.nalog = newTaxSystem;
 }

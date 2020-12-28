@@ -14,6 +14,7 @@
 namespace ns {
 
     using ConditionExecutor = std::function<bool(const ns::Organization &)>;
+    using ResultAction = std::function<void(Organization &)>;
 
 
     template <class T>

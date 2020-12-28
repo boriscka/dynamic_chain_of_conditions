@@ -42,6 +42,9 @@ namespace ns {
     public:
         Organization() : egrul{-1, -1, -1, -1} {}
 
+        void addToUK(long long amount);
+        void changeTax(const std::string &newTaxSystem);
+
         template<class T>
         const T& getByNamePath(const std::string &namePath) const {
             std::vector<std::string> names;
@@ -71,7 +74,7 @@ namespace ns {
                 } else if (rootName == "cbr" && names.size() > 1) {
                     auto &cbrMember = names[1];
                     if (cbrMember == "emission" && cbr.emission.has_value()) {
-                        auto& cbrEmission = cbr.emission.value();
+                        auto cbrEmission = cbr.emission.value();
                         return returnSameTypeOnly<T, decltype(cbrEmission)>(cbrEmission);
                     }
                 }
@@ -89,9 +92,6 @@ namespace ns {
         template <class TargetType, class ValueType>
         const typename std::enable_if<not std::is_same_v<TargetType, ValueType>, TargetType>::type &
         returnSameTypeOnly(const ValueType &value) const {
-            if (typeid(TargetType).hash_code() == typeid(ValueType).hash_code()) { // get rid (it's kinda debug)
-                return TargetType();
-            }
             throw std::runtime_error("Expected type and current type ain't same: (target type) "
                                      + std::to_string(typeid(TargetType).hash_code()) + ", (actual type) "
                                      + std::to_string(typeid(ValueType).hash_code()));

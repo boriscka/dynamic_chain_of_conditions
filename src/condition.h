@@ -6,6 +6,8 @@
 #define CONDITIONS_CONDITION_H
 
 #include <organization.h>
+#include <condition_functions.h>
+
 #include <string>
 #include <utility>
 #include <functional>
@@ -14,13 +16,15 @@
 #include <stdexcept>
 #include <memory>
 
+
 namespace ns {
 
     class Rule;
     using RuleMap = std::map<std::string, std::shared_ptr<Rule>>;
 
-    const static std::string SCOPE_THEN_NAME("then");
-    const static std::string SCOPE_ELSE_NAME("else");
+    static const char* SCOPE_THEN_NAME = "then";
+    static const char* SCOPE_ELSE_NAME = "else";
+
 
     class Action {
 
@@ -30,18 +34,18 @@ namespace ns {
     public:
         using Ptr = std::shared_ptr<Action>;
 
-        enum ResultType {
-            RESULT_ACTION,
-            RESULT_RULE,
-            RESULT_UNDEFINED = -1
+        enum ResultStatus {
+            RESULT_STATUS_SUCCESS = 1,
+            RESULT_STATUS_WARNING,
+            RESULT_STATUS_ERROR,
+            RESULT_STATUS_UNDEFINED = -1
         };
 
-        enum ResultStatus {
-            STATUS_SUCCESS,
-            STATUS_WARNING,
-            STATUS_ERROR,
-            STATUS_UNDEFINED = -1
-        };
+    private:
+        std::string message;
+        ResultStatus status{RESULT_STATUS_UNDEFINED};
+        ResultAction action = [](Organization &o) { };
+
 
     public:
         virtual ~Action() = default;
@@ -56,9 +60,6 @@ namespace ns {
 
 
     class Rule: public Action {
-
-    public:
-        using ConditionExecutor = std::function<bool(const Organization &)>;
 
     private:
 

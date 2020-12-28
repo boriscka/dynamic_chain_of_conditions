@@ -22,6 +22,7 @@ void ns::Condition::applyTo(ns::Organization &org) {
 }
 
 std::optional<ns::Action::Ptr> ns::Rule::applyTo(ns::Organization &org) {
+    std::cout << "Rule (" << name << ") is applying..." << std::endl;
     if (ifExecutor(org)) {
         return thenAction;
     } else {
@@ -30,7 +31,10 @@ std::optional<ns::Action::Ptr> ns::Rule::applyTo(ns::Organization &org) {
 }
 
 std::optional<ns::Action::Ptr> ns::Action::applyTo(ns::Organization &org) {
-    std::cout << "ns::Result::applyTo: success" << std::endl;
+    std::cout << "Result is applying..." << std::endl;
+    std::cout << "Result status: " << status << std::endl;
+    std::cout << "Result message: " << message << std::endl;
+    action(org);
     return nullptr;
 }
 
@@ -67,7 +71,7 @@ void ns::to_json(json &j, const ns::Action &result) {
 void ns::from_json(const json &j, ns::Condition &cond) {
     ns::RuleMap rules;
     for (auto jsonRule = j.begin(); jsonRule != j.end(); jsonRule++) {
-        auto rule = std::make_shared<Rule>();
+        auto rule = std::make_shared<Rule>(jsonRule.key());
         jsonRule.value().get_to(*rule);
         rules.insert({jsonRule.key(), rule});
     }
@@ -81,22 +85,53 @@ void ns::from_json(const json &j, ns::Condition &cond) {
 }
 
 void ns::from_json(const json &j, ns::Rule &rule) {
+    auto jsonIf = j.at("if");
+    ns::defineIfConditionExecutors(jsonIf, rule.ifExecutor);
+
     auto jsonThen = j.at("then");
-    if (jsonThen.at("type") == "rule") {
+    auto jsonThenType = jsonThen.at("type").get<std::string>();
+    if (jsonThenType == "rule") {
         auto relativeRuleName = jsonThen.at("name").get<std::string>();
         rule.relativeRules.insert({ns::SCOPE_THEN_NAME, relativeRuleName});
+    } else if (jsonThenType == "result") {
+        auto result = std::make_shared<Action>();
+        jsonThen.get_to(*result);
+        rule.thenAction = result;
     }
 
     auto jsonElse = j.at("else");
-    if (jsonElse.at("type") == "rule") {
+    auto jsonElseType = jsonElse.at("type").get<std::string>();
+    if (jsonElseType == "rule") {
         auto relativeRuleName = jsonElse.at("name").get<std::string>();
         rule.relativeRules.insert({ns::SCOPE_ELSE_NAME, relativeRuleName});
+    } else if (jsonElseType == "result") {
+        auto result = std::make_shared<Action>();
+        jsonElse.get_to(*result);
+        rule.elseAction = result;
     }
-
-    auto jsonIf = j.at("if");
-    ns::defineIfConditionExecutors(jsonIf, rule.ifExecutor);
 }
 
-void ns::from_json(const json &j, ns::Action &result) {
-
+void ns::from_json(const json &j, Action &result) {
+    j.at("value").get_to(result.status);
+    if (result.status == Action::RESULT_STATUS_UNDEFINED) {
+        throw std::runtime_error("wrong json result value");
+    }
+    result.message = j.at("message").get<std::string>();
+    if (j.contains("action") && result.status == Action::RESULT_STATUS_ERROR) {
+        auto actionName = j.at("action").get<std::string>();
+        // hard coded cuz it's out of test task
+        if (actionName == "Увеличить") {
+            auto debugAmount = 10'000'000ll;
+            result.action = [debugAmount] (ns::Organization &org) {
+                std::cout << "Action 'Увеличить' is applying..." << std::endl;
+                org.addToUK(debugAmount);
+            };
+        } else if (actionName == "change_tax") {
+            auto debugTaxSystem = "УСН";
+            result.action = [debugTaxSystem] (ns::Organization &org) {
+                std::cout << "Action 'change_tax' is applying..." << std::endl;
+                org.changeTax(debugTaxSystem);
+            };
+        }
+    }
 }
