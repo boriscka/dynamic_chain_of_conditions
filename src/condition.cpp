@@ -3,7 +3,9 @@
 //
 
 #include <iostream>
+#include <string>
 #include <condition.h>
+#include <condition_functions.h>
 
 
 void ns::Condition::applyTo(ns::Organization &org) {
@@ -14,19 +16,22 @@ void ns::Condition::applyTo(ns::Organization &org) {
         std::cout << "There is no a rule in a current condition!" << std::endl;
         return;
     }
-    for (auto nextAction = rootRule->applyTo(org); nextAction.has_value();) {
-        nextAction = nextAction.value().applyTo(org);
+    for (auto nextAction = rootRule->applyTo(org); nextAction.has_value() && nextAction.value() != nullptr;) {
+        nextAction = nextAction.value()->applyTo(org);
     }
 }
 
-std::optional<ns::Action> ns::Action::applyTo(ns::Organization &org) {
-    std::cout << "ns::Result::applyTo: success" << std::endl;
-    return {};
+std::optional<ns::Action::Ptr> ns::Rule::applyTo(ns::Organization &org) {
+    if (ifExecutor(org)) {
+        return thenAction;
+    } else {
+        return elseAction;
+    }
 }
 
-std::optional<ns::Action> ns::Rule::applyTo(ns::Organization &org) {
-    std::cout << "Rule::applyTo: success" <<std::endl;
-    return {};
+std::optional<ns::Action::Ptr> ns::Action::applyTo(ns::Organization &org) {
+    std::cout << "ns::Result::applyTo: success" << std::endl;
+    return nullptr;
 }
 
 void ns::Rule::linkToRules(const ns::RuleMap & rules) {
@@ -88,6 +93,8 @@ void ns::from_json(const json &j, ns::Rule &rule) {
         rule.relativeRules.insert({ns::SCOPE_ELSE_NAME, relativeRuleName});
     }
 
+    auto jsonIf = j.at("if");
+    ns::defineIfConditionExecutors(jsonIf, rule.ifExecutor);
 }
 
 void ns::from_json(const json &j, ns::Action &result) {

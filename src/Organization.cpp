@@ -23,13 +23,6 @@ void ns::from_json(const json& j, ns::Organization& o) {
     jEmission.get_to(o.cbr.emission.value());
 }
 
-
-template<typename T>
-const T& ns::Organization::getByNamePath(const std::string &namePath) {
-    //throw std::runtime_error("Organization::getByNamePath: it's not realized");
-    return egrul.uk;
-}
-
 std::ostream& ns::operator << (std::ostream &out, const ns::Organization &o) {
     out << "{\n\tegrul: {\n\t\tinn " << o.egrul.inn << ", uk " << o.egrul.uk << ", ogrn " << o.egrul.ogrn
         << ", opf " << o.egrul.opf << ", nalog \"" << o.egrul.nalog << "\"\n\t},\n\tcbr: {\n\t\temission "

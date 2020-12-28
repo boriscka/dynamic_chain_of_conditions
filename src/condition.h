@@ -51,20 +51,23 @@ namespace ns {
          * @param org
          * @return next Action (to avoiding a recursion)
          */
-        virtual std::optional<ns::Action> applyTo(Organization &org);
+        virtual std::optional<Action::Ptr> applyTo(Organization &org);
     };
 
 
     class Rule: public Action {
 
+    public:
         using ConditionExecutor = std::function<bool(const Organization &)>;
+
+    private:
 
         std::string name;
         std::map<std::string, std::string> relativeRules;
 
-        ConditionExecutor ifExecutor;
-        Action::Ptr thenAction;
-        Action::Ptr elseAction;
+        ConditionExecutor ifExecutor = [](const Organization &o){ return true;};
+        Action::Ptr thenAction = nullptr;
+        Action::Ptr elseAction = nullptr;
 
         friend void to_json(json& j, const Rule&);
         friend void from_json(const json& j, Rule&);
@@ -74,7 +77,7 @@ namespace ns {
         Rule() = default;
         explicit Rule(std::string name) : name(std::move(name)) {}
 
-        std::optional<ns::Action> applyTo(Organization &org) override;
+        std::optional<Action::Ptr> applyTo(Organization &org) override;
 
         void linkToRules(const RuleMap & rules);
     };
