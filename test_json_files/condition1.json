@@ -1,0 +1,71 @@
+﻿{
+   "rule_1":
+   {
+       "if":
+       {
+          "cond": "greater_then_on_equal_to",
+          "field": "egrul.uk",
+          "value": 10000000
+       },
+       "then":
+       {
+          "type": "rule",
+          "name": "rule_2"
+       },
+       "else":
+       {
+          "type": "result",
+          "value": 3,
+          "message": "Согласно 171-ФЗ от 22.11.1995 компания-заявитель должна иметь размер уставного капитала не менее 10 миллионов рублей (статья Х, пункт У).",
+          "action": "Увеличить"
+       }
+  },
+
+
+
+  "rule_2":
+  {
+       "if":
+       {
+          "cond": "range",
+          "field": "egrul.opf",
+          "min": 12200,
+          "max": 12299
+       },
+       "then":
+       {
+          "type": "rule",
+          "name": "rule_3"
+       },
+       "else":
+       {
+          "type": "result",
+          "value": 1,
+          "message": "Уставной капитал соответствует требованиям"
+       }
+  },
+
+
+
+  "rule_3":
+  {
+       "if":
+       {
+          "cond": "equal",
+          "field": "cbr.emission",
+          "value": true
+       },
+       "then":
+       {
+          "type": "result",
+          "value": 1,
+          "message": "Уставной капитал АО соответствует требованиям и проверен выпуск ценных бумаг"
+       },
+       "else":
+       {
+          "type": "result",
+          "value": 3,
+          "message": "Выявлены проблемы с ценными бумагами"
+       }
+  }
+}

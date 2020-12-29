@@ -1,0 +1,47 @@
+﻿{
+  "rule_1":
+  {
+       "if":
+       {
+          "cond": "equal",
+          "field": "egrul.nalog",
+          "value": "ОСНО"
+       },
+       "then":
+       {
+          "type": "result",
+          "value": 1,
+          "message": "налогообложение соответстует"
+       },
+       "else":
+       {
+          "type": "rule",
+          "name": "rule_2"
+       }
+  },
+
+  "rule_2":
+  {
+       "if":
+       {
+          "cond": "equal",
+          "field": "egrul.nalog",
+          "value": "УСН"
+       },
+       "then":
+       {
+          "type": "result",
+          "value": 2,
+          "message": "Рекомендуем перейти на ОСНО"
+       },
+       "else":
+       {
+          "type": "result",
+          "value": 3,
+          "message": "Система налогообложения не соответствует",
+          "action": "change_tax"
+       }
+
+  }
+
+}
